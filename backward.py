@@ -3,6 +3,7 @@
 Created on Tue Jan 29 14:09:36 2019
 
 @author: Timmy_Fan
+contact me: fk_Timmy_Avengers@163.com
 """
 import forward
 import generate_dataset
@@ -19,16 +20,16 @@ def backward():
     X,Y,X_test,Y_test = generate_dataset.generate_dataset()
     y_pred=forward.forward(x,REGULARIZER)
     global_step=tf.Variable(0,trainable=False)
+    #learning rate exponential decay
     learning_rate = tf.train.exponential_decay(learning_rate_base,global_step,learning_rate_step,learning_rate_decay,staircase = False)
     mse = tf.reduce_mean(tf.square(y_pred-y_train))
-    #cen = tf.nn.softmax_cross_entropy_with_logits(labels=y_train, logits=y_pre, name="cen")
-    #average_loss = tf.reduce_mean(cen, name="average_loss")
     loss =  mse + tf.add_n(tf.get_collection('losses'))
+    #choose AdamOptimizer
     train_step = tf.train.AdamOptimizer(learning_rate).minimize(loss,global_step = global_step)
     with tf.Session() as sess:
         init_op = tf.global_variables_initializer()
         sess.run(init_op)
-        #训练模型
+        #training steps
         for i in range(STEPS):
             sess.run(train_step, feed_dict={x:X[0:20000], y_train:Y[0:20000]})
             if i%100 == 0:
@@ -37,5 +38,6 @@ def backward():
                 print(sess.run(y_pred,feed_dict={x:X, y_train:Y}))
 if __name__ =='__main__':
     backward()
-
-    
+'''
+    other Optimizers : tf.train.GradientDescentOptimizer(learning_rate).minimize(loss,global_step = global_step)
+                       tf.train.MomentumOptimizer(learning_rate,momentum).minimize(loss,global_step = global_step)
