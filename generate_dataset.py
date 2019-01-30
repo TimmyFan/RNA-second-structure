@@ -3,6 +3,7 @@
 Created on Tue Jan 29 19:10:05 2019
 
 @author: Timmy_Fan
+contact me : fk_Timmy_Avengers@163.com
 """
 import numpy as np
 #loading dataset
