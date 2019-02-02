@@ -13,6 +13,7 @@ REGULARIZER = 0.01
 learning_rate_base = 0.001
 learning_rate_step = 1
 learning_rate_decay = 0.99
+MOVING_AVERAGE_DECAY = 0.99
 STEPS = 50000
 def backward():
     x = tf.placeholder(tf.float64,shape=(None,23))
@@ -22,10 +23,16 @@ def backward():
     global_step=tf.Variable(0,trainable=False)
     #learning rate exponential decay
     learning_rate = tf.train.exponential_decay(learning_rate_base,global_step,learning_rate_step,learning_rate_decay,staircase = False)
+    ema = tf.train.ExponentialMovingAverage(MOVING_AVERAGE_DECAY,global_step)
+    ema_op = ema.apply(tf.trainable_variables())
     mse = tf.reduce_mean(tf.square(y_pred-y_train))
     loss =  mse + tf.add_n(tf.get_collection('losses'))
     #choose AdamOptimizer
     train_step = tf.train.AdamOptimizer(learning_rate).minimize(loss,global_step = global_step)
+    with tf.control_dependencies([train_step,ema_op]):
+        train_op = tf.no_op(name = 'train')
+    MAE = tf.reduce_mean(abs(y_pre-y_train))
+    accuracy = 1/(1+MAE) 
     with tf.Session() as sess:
         init_op = tf.global_variables_initializer()
         sess.run(init_op)
